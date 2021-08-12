@@ -11,6 +11,22 @@ Language: TL-Verilog
 
 * No need testbench, provides random stimulus.
 
+* Combinational and Sequential Logic: $signals and expressions
+
+* Pipelines: |pipelines and @stages
+
+* Validity: ?$valid
+
+* Pipeline interactions: >>alignment
+
+* Hierarchy: /hierarchy
+
+* State: $State
+
+* Transaction Flows: $ANY
+
+* File Structure: \SV, \SV_plus, \TLV, \TLV_version
+
 ---
 **L1-Full adder**
 
