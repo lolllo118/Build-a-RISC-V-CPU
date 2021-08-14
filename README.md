@@ -1,6 +1,6 @@
 ## Build-a-RISC-V-CPU (edX course)
 
-Course: LinuxFoundationX LFD111x
+Course: LinuxFoundationX LFD111x   [(Github)](https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core)
 
 Platform: Makerchip
 
@@ -25,11 +25,13 @@ Language: TL-Verilog
 
 
 ## Lab
-* [Website](https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core)
+
 * L1: Full adder
 * L2: Calculator (Combinational)
 * L3: Calculator (Sequential)
 * L4: Counter
 * L5: Subset CPU
 * L6: Complete RISC-V CPU
+
+
 
