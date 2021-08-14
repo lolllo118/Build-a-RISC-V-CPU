@@ -30,5 +30,7 @@ Language: TL-Verilog
 * L2: Calculator (Combinational)
 * L3: Calculator (Sequential)
 * L4: Counter
+* L5: Subset CPU
+* L6: Complete RISC-V CPU
 
 
