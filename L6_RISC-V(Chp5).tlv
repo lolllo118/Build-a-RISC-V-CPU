@@ -2,12 +2,12 @@
 \SV
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/1d1023ccf8e7b0a8cf8e8fc4f0a823ebb61008e3/risc-v_defs.tlv'])
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/main/lib/risc-v_shell_lib.tlv'])
-   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/1d1023ccf8e7b0a8cf8e8fc4f0a823ebb61008e3/risc-v_defs.tlv'])
-   
+                   
    
 \SV
    // Macro providing required top-level module definition, random
    // stimulus support, and Verilator config.
+   //m4_define(['M4_MAX_CYC'], 50)
    m4_test_prog()
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
 \TLV
@@ -16,9 +16,11 @@
    
    //PC
    $pc[31:0] = >>1$next_pc;
-   $next_pc[31:0] = $reset ? '0 :
+   $next_pc[31:0] = $reset ? 32'b0 :
                     $taken_br ? $br_tgt_pc: 
-                                $pc + 32'd4;
+                    $is_jal ? $br_tgt_pc: 
+                    $is_jalr ? $jalr_tgt_pc: 
+                    $pc[31:0] + 32'd4;
    
    //IMem
    `READONLY_MEM($pc, $$instr[31:0])
@@ -50,10 +52,10 @@
    ////3.Immediate field
    $imm[31:0] = $is_i_instr ? {{21{$instr[31]}}, $instr[30:20]}:
                 $is_s_instr ? {{21{$instr[31]}}, $instr[30:25], $instr[11:7]}:
-                $is_b_instr ? {{20{$instr[31]}}, $instr[7], $instr[30:25], $instr[11:8], 1'b0}:
+                $is_b_instr ? {{19{$instr[31]}}, {2{$instr[7]}}, $instr[30:25], $instr[11:8], 1'b0}:
                 $is_u_instr ? {$instr[31:12], 12'b0}:
-                $is_i_instr ? {{12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], 1'b0}:
-                              32'b0;
+                $is_j_instr ? {{12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], 1'b0}:
+                32'b0;
    `BOGUS_USE($imm)
    ////4.Instruction 
    $dec_bits[10:0] = {$instr[30],$funct3,$opcode};
@@ -98,7 +100,7 @@
    $rd1_index[4:0] = $rs1;
    $rd2_index[4:0] = $rs2;
    $src1_value[31:0] = $rd1_data; //Bit ranges not needed, as explicit within the macro definition)
-   $src2_value[31:0] = $rd2_data; 
+   $src2_value[31:0] = $rd2_data;
    `BOGUS_USE($src1_value $src2_value)
    
    //ALU
@@ -114,7 +116,7 @@
    $result[31:0] = $is_andi ? $src1_value & $imm:
                    $is_ori  ? $src1_value | $imm:
                    $is_xori ? $src1_value ^ $imm:
-                   $is_addi ? $src1_value + $imm:
+                   ($is_addi || $is_load || $is_s_instr)  ? $src1_value + $imm:
                    $is_slli ? $src1_value << $imm[5:0]:
                    $is_srli ? $src1_value >> $imm[5:0]:
                    $is_and  ? $src1_value & $src2_value:
@@ -134,12 +136,13 @@
                    $is_slti ? (($src1_value[31] == $imm[31])? $sltiu_rslt : {31'b0, $src1_value[31]}):
                    $is_sra ? $sra_rslt[31:0]:
                    $is_srai ? $srai_rslt[31:0]:
-                              32'b0;
+                   32'b0;
    
    //Register File Write
    $wr_en = $rd_valid && ($rd != 5'b0);
    $wr_index[4:0] = $rd;
-   $wr_data[31:0] = $result;
+   $wr_data[31:0] = $is_load ? $ld_data[31:0] : 
+                    $result;
    
    //Branch Logic
    ////1.Take branch
@@ -152,12 +155,12 @@
                1'b0;
    ////2.Branch target
    $br_tgt_pc[31:0] = $pc + $imm;
+   $jalr_tgt_pc[31:0] = $src1_value + $imm;
+   
    ////3.Update next_PC
    
    
-   // Assert these to end simulation (before Makerchip cycle limit).
-   //*passed = *cyc_cnt > 40;
-   //*failed = 1'b0;
+   
    
    m4+tb()
    *passed = 1'b0;
@@ -165,7 +168,7 @@
    
    m4+rf(32, 32, $reset, $wr_en, $wr_index[4:0], $wr_data[31:0], $rd1_en, 
          $rd1_index[4:0], $rd1_data, $rd2_en, $rd2_index[4:0], $rd2_data)
-   
+   m4+dmem(32, 32, $reset, $result[6:2], $is_s_instr, $src2_value, $is_load, $ld_data) //assuming that the lowest two address bits are zero.
    m4+cpu_viz()
 \SV
    endmodule
