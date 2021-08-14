@@ -9,7 +9,7 @@ Language: TL-Verilog
 
 * No need declare signal/wires 
 * No need testbench, provides random stimulus.
-* [Website](https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core)
+* [Website](https://www.redwoodeda.com/tl-verilog)
 
 ## CPU Microarchitecture and Implementation 
 
@@ -25,12 +25,11 @@ Language: TL-Verilog
 
 
 ## Lab
-
+* [Website](https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core)
 * L1: Full adder
 * L2: Calculator (Combinational)
 * L3: Calculator (Sequential)
 * L4: Counter
 * L5: Subset CPU
 * L6: Complete RISC-V CPU
-
 
